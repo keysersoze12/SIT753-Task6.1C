@@ -1,74 +1,89 @@
 pipeline {
     agent any
     stages {
-        stage('Checkout') {
-            steps {
-                checkout([
-                    $class: 'GitSCM', 
-                    branches: [[name: '*/main']], 
-                    userRemoteConfigs: [[
-                        url: 'https://github.com/keysersoze12/SIT753-Task6.1C.git',
-                        credentialsId: '5561bb68-438c-41b8-b082-d0044ad8cc05'
-                    ]]
-                ])
-            }
-        }
-
         stage('Build') {
             steps {
-                echo 'No build required for this dummy project. Skipping build stage.'
+                 echo 'Use Maven to build the code'
             }
         }
-
+ 
         stage('Unit and Integration Tests') {
             steps {
-                echo 'Running dummy tests...'
+                echo 'Run unit and integration tests using Selenium and junit'
+            }
+ 
+            post {
+                success {
+                    echo 'Selenium and junit test successfully completed'
+                    emailext(
+                        to: 'adithyaoz11@gmail.com',
+                        subject:"Status of Unit and Integration Test:  ${currentBuild.result}",
+                        body:'Check the log files to obtain additional information about the process',
+                        attachLog: true
+                    )
+                }
+                failure {
+                    echo 'The Unit and Integration Testing failed'
+                    emailext(
+                        to: 'adithyaoz11@gmail.com',
+                        subject:"Status of Unit and Integration Test:  ${currentBuild.result}",
+                        body:'Check the log files to obtain additional information about the process',
+                        attachLog: true
+                    )
+                }
             }
         }
-
+ 
         stage('Code Analysis') {
             steps {
-                echo 'Running dummy code analysis...'
+                echo 'Integrate with SonarQube for code analysis'
             }
         }
-
+ 
         stage('Security Scan') {
             steps {
-                echo 'Running dummy security scan...'
+                echo 'Perform security scan using OWASP ZAP'
+            }
+ 
+            post {
+                success {
+                    echo 'OWASP ZAP Security Scanning successfully completed'
+                    emailext(
+                        to: 'adithyaoz11@gmail.com',
+                        subject:"Status of Security Scanning:  ${currentBuild.result}",
+                        body:'Check the log files to obtain additional information about the process',
+                        attachLog: true
+                    )
+                }
+ 
+                failure {
+                    echo 'OWASP ZAP Security Scanning failed'
+                    emailext(
+                        to: 'adithyaoz11@gmail.com',
+                        subject:"Status of Security Scanning:  ${currentBuild.result}",
+                        body:'Check the log files to obtain additional information about the process',
+                        attachLog: true
+                    )
+                }
             }
         }
-
+ 
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying dummy project to staging...'
+                echo 'Deploy application to staging server using AWS CodeDeploy'
             }
         }
-
+ 
         stage('Integration Tests on Staging') {
             steps {
-                echo 'Running integration tests on staging...'
+                echo 'Run integration tests on staging environment with Selenium'
             }
         }
-
+ 
         stage('Deploy to Production') {
             steps {
-                echo 'Deploying dummy project to production...'
+                echo 'Deploy application to production server using AWS CodeDeploy'
             }
-        }
-    }
-
-    post {
-        success {
-            mail to: 's223859001@deakin.edu.au',
-                 subject: "SUCCESS: Build ${currentBuild.fullDisplayName}",
-                 body: """The Jenkins job ${env.JOB_NAME} was successful.
-                          Job URL: ${env.BUILD_URL}"""
-        }
-        failure {
-            mail to: 's223859001@deakin.edu.au',
-                 subject: "FAILURE: Build ${currentBuild.fullDisplayName}",
-                 body: """The Jenkins job ${env.JOB_NAME} failed.
-                          Job URL: ${env.BUILD_URL}"""
         }
     }
 }
